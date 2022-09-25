@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Remove Nix
 chmod -R u+rw ~/.nix && rm -rf ~/.nix ~/.nix-profile ~/.nix-defexpr/ ~/.nix-channels ~/.local/bin/nix-user-chroot
 # Remove Fira Code

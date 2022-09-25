@@ -6,8 +6,6 @@
 # This thing was tested on Ubuntu
 # Uninstall nix:
 # chmod -R u+rw ~/.nix && rm -rf ~/.nix ~/.nix-profile ~/.nix-defexpr/ ~/.nix-channels ~/.local/bin/nix-user-chroot
-# Remove Fira Code font:
-# rm ~/.local/share/fonts/ttf/FiraCode-* ~/.local/share/fonts/variable_ttf/FiraCode-* ~/.local/share/fonts/woff/FiraCode-* ~/.local/share/fonts/woff2/FiraCode-* ~/.local/share/fonts/{fira_code.css,README.txt,specimen.html}
 
 DIR=~/.nix
 CHROOTDIR=~/.local/bin
@@ -32,6 +30,7 @@ function askYesNo {
     # Arguments: <Message> <default value (true | false)>
     local QUESTION=$1
     local DEFAULT=$2
+    local INPUT
     if [ "$DEFAULT" = true ]; then
             OPTIONS="[Y/n]"
             DEFAULT="y"
@@ -44,7 +43,7 @@ function askYesNo {
     fi
     read -p "$QUESTION $OPTIONS " -n 1 -s -r INPUT
     #If $INPUT is empty, use $DEFAULT
-    local INPUT=${INPUT:-${DEFAULT}}
+    INPUT=${INPUT:-${DEFAULT}}
     echo ${INPUT}
     if [[ "$INPUT" =~ ^[yY]$ ]]; then
         return 1
@@ -155,8 +154,14 @@ mkdir ~/.emacs.d/
 curl -s -L https://raw.githubusercontent.com/ThwyIgo/dotfiles/main/.emacs.d/init.el > ~/.emacs.d/init.el
 genDesktopFile "emacs"
 
+# Clean script
+curl -s -L https://raw.githubusercontent.com/ThwyIgo/portable-environment/main/clean.sh > $CHROOTDIR/cleanNix.sh
+echo -e "\nrm ${CHROOTDIR}/cleanNix.sh" >> $CHROOTDIR/cleanNix.sh
+chmod u+x $CHROOTDIR/cleanNix.sh
+
 #### Finishing up ####
 runNix emacs &
-echo -e "${GREEN}To enter nix env, type 'nix-user-chroot ~/.nix bash -l'${NC}"
+echo -e "${GREEN}To enter nix env, type 'nix-user-chroot ${DIR} bash -l'${NC}"
+echo -e "To remove Nix, type 'cleanNix.sh' after sourcing ~/.bashrc or restarting your terminal emulator"
 
 exit
