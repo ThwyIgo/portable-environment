@@ -2,9 +2,8 @@
 
 function runNix {
     # Run a command inside Nix environment
-    local command=$1
-    echo $command
+    local command=$*
     echo $command | nix-user-chroot ~/.nix bash -l
 }
 
-runNix $1
+runNix $*

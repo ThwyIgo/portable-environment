@@ -4,6 +4,7 @@
 # It uses Nix (package manager)
 # https://github.com/nix-community/nix-user-chroot
 # This thing was tested on Ubuntu
+# Warning: This script will change your $PATH on ~/.bashrc
 # Uninstall nix:
 # chmod -R u+rw ~/.nix && rm -rf ~/.nix ~/.nix-profile ~/.nix-defexpr/ ~/.nix-channels ~/.local/bin/nix-user-chroot
 
@@ -20,8 +21,8 @@ NORMAL=$(tput sgr0)
 
 # Functions
 function runNix {
-    # Run a command inside Nix environment
-    local command=$1
+    # Run a command inside Nix environment. No need for quotes
+    local command=$*
     echo $command | nix-user-chroot ~/.nix bash -l
 }
 
@@ -62,13 +63,13 @@ function genDesktopFile {
     local name=$1
     local sufix="${name}-nix"
     local binPath=$(echo "which ${name}" | nix-user-chroot ~/.nix bash -l)
-    runNix "cp ~/.nix-profile/share/applications/${name}.desktop ~/.local/share/applications/${sufix}.desktop"
+    runNix cp ~/.nix-profile/share/applications/${name}.desktop ~/.local/share/applications/${sufix}.desktop
     chmod u+rw ~/.local/share/applications/${sufix}.desktop
     echo "nix-user-chroot ~/.nix ${binPath}" > ~/.local/share/applications/${sufix}.sh
     chmod u+x ~/.local/share/applications/${sufix}.sh
     sed -Ei 's|^Exec=.*|Exec='"${HOME}/.local/share/applications/${sufix}"'.sh|' ~/.local/share/applications/${sufix}.desktop
     mkdir -p ~/.local/share/icons/
-    runNix "cp ~/.nix-profile/share/icons/hicolor/scalable/apps/${name}.svg ~/.local/share/icons/${name}.svg"
+    runNix cp ~/.nix-profile/share/icons/hicolor/scalable/apps/${name}.svg ~/.local/share/icons/${name}.svg
     sed -Ei 's|^Icon=.*|Icon='"${HOME}/.local/share/icons/${name}"'.svg|' ~/.local/share/applications/${sufix}.desktop
 }
 
@@ -110,7 +111,8 @@ curl -s https://api.github.com/repos/nix-community/nix-user-chroot/releases/late
     grep "tag_name" |
     awk '{print "https://github.com/nix-community/nix-user-chroot/releases/download/" substr($2, 2, length($2)-3) "/nix-user-chroot-bin-" substr($2, 2, length($2)-3) "-x86_64-unknown-linux-musl"}' |
     wget -i - -O nix-user-chroot
-if [ ! -e ./nix-user-chroot ]; then
+# Check if file exists and it's size to be sure it isn't an empty file
+if [[ (! -e ./nix-user-chroot) || ($(du --apparent-size --block-size=1 "nix-user-chroot" | awk '{ print $1}') -le 1) ]]; then
     echo "It was not possible to retrieve the nix-user-chroot binary."
     exit
 fi
@@ -158,6 +160,11 @@ genDesktopFile "emacs"
 curl -s -L https://raw.githubusercontent.com/ThwyIgo/portable-environment/main/clean.sh > $CHROOTDIR/cleanNix.sh
 echo -e "\nrm ${CHROOTDIR}/cleanNix.sh" >> $CHROOTDIR/cleanNix.sh
 chmod u+x $CHROOTDIR/cleanNix.sh
+
+# runNix script
+## Usage: runNix <command to be ran inside nix-chroot>
+curl -s -L https://raw.githubusercontent.com/ThwyIgo/portable-environment/main/runNix.sh > $CHROOTDIR/runNix.sh
+chmod u+x $CHROOTDIR/runNix.sh
 
 #### Finishing up ####
 runNix emacs &
