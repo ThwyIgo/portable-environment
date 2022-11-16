@@ -133,6 +133,8 @@ nix-user-chroot ~/.nix bash -c "curl -L https://nixos.org/nix/install | bash"
 nix-user-chroot ~/.nix bash -l <<"EOT"
 nix-env -iA nixpkgs.emacs
 EOT
+echo "alias nix-shell='nix-user-chroot ${DIR} bash -l'" >> ~/.bashrc
+alias nix-shell='nix-user-chroot ${DIR} bash -l'
 
 # Fonts
 echo -e "${BLUE}Installing fonts...${NC}"
@@ -149,12 +151,23 @@ rm ${zip}
 rm ~/.local/share/fonts/{README.txt,specimen.html}
 fc-cache -f
 
+# Installing clangd
+wget https://github.com/clangd/clangd/releases/download/15.0.3/clangd-linux-15.0.3.zip -O ~/.local/clangd.zip
+unzip ~/.local/clangd.zip -d ~/.local/
+cp -arf ~/.local/clangd_15.0.3/** ~/.local/
+rm ~/.local/clangd.zip
+rm -rf ~/.local/clangd_15.0.3/
+
 #### Other configs ####
 
 # Emacs config
-mkdir ~/.emacs.d/
+mkdir -p ~/.emacs.d/snippets/cc-mode/
 curl -s -L https://raw.githubusercontent.com/ThwyIgo/dotfiles/main/.emacs.d/init.el > ~/.emacs.d/init.el
+curl -s -L https://raw.githubusercontent.com/ThwyIgo/dotfiles/main/.emacs.d/snippets/cc-mode/forij > ~/.emacs.d/snippets/cc-mode/forij
+curl -s -L https://raw.githubusercontent.com/ThwyIgo/dotfiles/main/.emacs.d/snippets/cc-mode/malloccast > ~/.emacs.d/snippets/cc-mode/malloccast
+curl -s -L https://raw.githubusercontent.com/ThwyIgo/dotfiles/main/.emacs.d/snippets/cc-mode/realloc > ~/.emacs.d/snippets/cc-mode/realloc
 genDesktopFile "emacs"
+echo "alias emacs-nix='runNix.sh env XMODIFIERS= emacs -q -l ~/.emacs.d/init.el'" >> ~/.bashrc
 
 # Clean script
 curl -s -L https://raw.githubusercontent.com/ThwyIgo/portable-environment/main/clean.sh > $CHROOTDIR/cleanNix.sh
@@ -167,8 +180,9 @@ curl -s -L https://raw.githubusercontent.com/ThwyIgo/portable-environment/main/r
 chmod u+x $CHROOTDIR/runNix.sh
 
 #### Finishing up ####
-runNix emacs &
+runNix.sh env XMODIFIERS= emacs -q -l ~/.emacs.d/init.el &
 echo -e "${GREEN}To enter nix env, type 'nix-user-chroot ${DIR} bash -l'${NC}"
 echo -e "To remove Nix, type 'cleanNix.sh' after sourcing ~/.bashrc or restarting your terminal emulator"
 
 exit
+# runNix.sh . /home/thiago/.nix-profile/etc/profile.d/nix.sh
