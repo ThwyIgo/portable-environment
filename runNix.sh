@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-function runNix {
+runNix() (
     # Run a command inside Nix environment
-    local command=$*
+    command=$*
     echo $command | nix-user-chroot ~/.nix bash -l
-}
-
+)
 runNix $*
