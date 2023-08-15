@@ -1,0 +1,12 @@
+#+AUTHOR: ThwyIgo
+
+* Why this repo exists?
+I've been using a lot of public PCs recently and I don't have root access to
+them. The goal is to download my dotfiles and install any software I need on any
+PC without root privileges.
+
+I want to make everything in POSIX sh and maybe support Windows and MacOS in the
+future.
+
+* Usage
+Run =install.sh=
